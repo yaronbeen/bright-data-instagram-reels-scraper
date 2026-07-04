@@ -214,7 +214,8 @@ class TestCollectByUrl(unittest.TestCase):
         self.assertEqual(payload["limit_per_input"], 5)
 
     @patch("instagram_reels_scraper.requests.post")
-    def test_collect_default_limit_is_none(self, mock_post):
+    def test_collect_default_limit_omitted(self, mock_post):
+        """limit_per_input should be absent from payload when not set."""
         mock_resp = MagicMock()
         mock_resp.json.return_value = [SAMPLE_REEL]
         mock_resp.raise_for_status = MagicMock()
@@ -226,7 +227,7 @@ class TestCollectByUrl(unittest.TestCase):
 
         call_kwargs = mock_post.call_args
         payload = call_kwargs.kwargs.get("json") or call_kwargs[1]["json"]
-        self.assertIsNone(payload["limit_per_input"])
+        self.assertNotIn("limit_per_input", payload)
 
 
 class TestDiscoverByProfile(unittest.TestCase):
@@ -371,6 +372,20 @@ class TestDiscoverByProfile(unittest.TestCase):
         self.assertNotIn("end_date", entry)
         self.assertNotIn("post_type", entry)
 
+    @patch("instagram_reels_scraper.requests.post")
+    def test_discover_default_limit_omitted(self, mock_post):
+        """limit_per_input should be absent from payload when not set."""
+        mock_resp = MagicMock()
+        mock_resp.json.return_value = [SAMPLE_REEL]
+        mock_resp.raise_for_status = MagicMock()
+        mock_post.return_value = mock_resp
+
+        self.scraper.discover_by_profile("https://www.instagram.com/natgeo")
+
+        call_kwargs = mock_post.call_args
+        payload = call_kwargs.kwargs.get("json") or call_kwargs[1]["json"]
+        self.assertNotIn("limit_per_input", payload)
+
 
 class TestDiscoverAllReels(unittest.TestCase):
     """Tests for discover_all_reels."""
@@ -451,7 +466,8 @@ class TestDiscoverAllReels(unittest.TestCase):
         self.assertEqual(payload["limit_per_input"], 20)
 
     @patch("instagram_reels_scraper.requests.post")
-    def test_discover_all_reels_default_limit_is_none(self, mock_post):
+    def test_discover_all_reels_default_limit_omitted(self, mock_post):
+        """limit_per_input should be absent from payload when not set."""
         mock_resp = MagicMock()
         mock_resp.json.return_value = [SAMPLE_REEL]
         mock_resp.raise_for_status = MagicMock()
@@ -461,7 +477,7 @@ class TestDiscoverAllReels(unittest.TestCase):
 
         call_kwargs = mock_post.call_args
         payload = call_kwargs.kwargs.get("json") or call_kwargs[1]["json"]
-        self.assertIsNone(payload["limit_per_input"])
+        self.assertNotIn("limit_per_input", payload)
 
 
 class TestMakeRequest(unittest.TestCase):
@@ -550,6 +566,22 @@ class TestMakeRequest(unittest.TestCase):
             self.scraper.collect_by_url(
                 "https://www.instagram.com/reel/C5Rdyj_q7YN/"
             )
+
+    @patch("instagram_reels_scraper.requests.post")
+    def test_request_timeout_is_set(self, mock_post):
+        """requests.post must be called with timeout=30."""
+        mock_resp = MagicMock()
+        mock_resp.json.return_value = []
+        mock_resp.raise_for_status = MagicMock()
+        mock_post.return_value = mock_resp
+
+        self.scraper.collect_by_url(
+            "https://www.instagram.com/reel/C5Rdyj_q7YN/"
+        )
+
+        call_kwargs = mock_post.call_args
+        timeout = call_kwargs.kwargs.get("timeout") or call_kwargs[1].get("timeout")
+        self.assertEqual(timeout, 30)
 
 
 if __name__ == "__main__":
