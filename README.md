@@ -4,20 +4,16 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Bright Data](https://img.shields.io/badge/Powered%20by-Bright%20Data-orange.svg)](https://get.brightdata.com/1tndi4600b25)
 
-A Python wrapper for [Bright Data's Instagram Reels scraper API](https://get.brightdata.com/1tndi4600b25). Collect detailed reel data by URL, discover reels from a profile's Posts tab, or retrieve all reels from the dedicated Reels tab.
+A Python wrapper for [Bright Data's Instagram Reels scraper API](https://get.brightdata.com/1tndi4600b25). Collect detailed reel data by URL with optional geo-targeting.
 
 ## Features
 
-- **Collect by URL** - Fetch full reel data from one or more Instagram reel URLs with optional geo-targeting
-- **Discover by Profile (Posts tab)** - Discover reels from a profile's Posts tab with date range, post type, and count filters
-- **Discover All Reels (Reels tab)** - Retrieve all reels from a profile's dedicated Reels tab
-- **Batch support** - Process multiple URLs or profiles in a single API call
+- **Collect by URL** - Fetch full reel data from one or more Instagram reel URLs
+- **Batch support** - Process multiple URLs in a single API call
 - **27 data fields** - Views, play count, likes, comments, video URL, thumbnail, duration, and more
 - **Geo-targeting** - Pass a country code to collect location-specific reel data
 - **Simple interface** - Clean Pythonic API with type hints
 - **Fast** - Average response time of ~5 seconds
-
-> **Posts tab vs. Reels tab:** "Discover by Profile" retrieves reels that appear on the profile's Posts tab, while "Discover All Reels" retrieves from the dedicated Reels tab. The Reels tab often contains reels that are not shown in the main Posts grid.
 
 ## Prerequisites
 
@@ -63,21 +59,6 @@ scraper = InstagramReelsScraper()
 results = scraper.collect_by_url("https://www.instagram.com/reel/C5Rdyj_q7YN/")
 for reel in results:
     print(f"{reel['user_posted']}: {reel['views']} views, {reel['likes']} likes")
-
-# Discover reels from a profile's Posts tab
-results = scraper.discover_by_profile(
-    "https://www.instagram.com/natgeo",
-    num_of_posts=10,
-    start_date="01-01-2025",
-    end_date="03-01-2025",
-)
-for reel in results:
-    print(f"{reel['url']} - {reel['views']} views")
-
-# Get all reels from a profile's Reels tab
-results = scraper.discover_all_reels("https://www.instagram.com/natgeo")
-for reel in results:
-    print(f"{reel['url']} - {reel['video_play_count']} plays")
 ```
 
 ## API Reference
@@ -118,81 +99,6 @@ results = scraper.collect_by_url(
     ],
     country_code="US",
 )
-```
-
----
-
-### `discover_by_profile(profiles, limit_per_input=None, **kwargs)`
-
-Discover reels from a profile's **Posts tab** with optional filters. Supports three calling conventions.
-
-#### Option 1: URL string with keyword arguments
-
-| Parameter         | Type         | Required | Description                                     |
-|-------------------|--------------|----------|-------------------------------------------------|
-| `profiles`        | `str`        | Yes      | Instagram profile URL                           |
-| `num_of_posts`    | `int`        | No       | Number of posts to retrieve                     |
-| `start_date`      | `str`        | No       | Start date filter (`"MM-DD-YYYY"`)              |
-| `end_date`        | `str`        | No       | End date filter (`"MM-DD-YYYY"`)                |
-| `post_type`       | `str`        | No       | Filter by post type (e.g. `"Reel"`)             |
-| `limit_per_input` | `int`        | No       | Max records per input profile                   |
-
-```python
-results = scraper.discover_by_profile(
-    "https://www.instagram.com/natgeo",
-    num_of_posts=10,
-    start_date="01-01-2025",
-    end_date="03-01-2025",
-    post_type="Reel",
-)
-```
-
-#### Option 2: Single dict
-
-```python
-results = scraper.discover_by_profile({
-    "url": "https://www.instagram.com/natgeo",
-    "num_of_posts": 10,
-    "start_date": "01-01-2025",
-    "end_date": "03-01-2025",
-})
-```
-
-#### Option 3: List of dicts (batch)
-
-```python
-results = scraper.discover_by_profile([
-    {"url": "https://www.instagram.com/natgeo", "num_of_posts": 5},
-    {"url": "https://www.instagram.com/bbcnews", "num_of_posts": 3},
-])
-```
-
-**Returns:** `list[dict]` - List of reel data dictionaries.
-
----
-
-### `discover_all_reels(urls, limit_per_input=None)`
-
-Discover all reels from a profile's dedicated **Reels tab**.
-
-| Parameter         | Type               | Required | Description                                        |
-|-------------------|--------------------|----------|----------------------------------------------------|
-| `urls`            | `str` or `list`    | Yes      | Single profile URL string or list of profile URLs  |
-| `limit_per_input` | `int` or `None`    | No       | Max records to return per input profile            |
-
-**Returns:** `list[dict]` - List of reel data dictionaries.
-
-**Example:**
-
-```python
-# Single profile
-results = scraper.discover_all_reels("https://www.instagram.com/natgeo")
-
-# Multiple profiles
-results = scraper.discover_all_reels([
-    "https://www.instagram.com/natgeo",
-    "https://www.instagram.com/bbcnews",
-])
 ```
 
 ## Output Fields
