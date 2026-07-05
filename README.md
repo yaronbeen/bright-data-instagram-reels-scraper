@@ -4,7 +4,9 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Bright Data](https://img.shields.io/badge/Powered%20by-Bright%20Data-orange.svg)](https://get.brightdata.com/1tndi4600b25)
 
-A Python wrapper for [Bright Data's Instagram Reels scraper API](https://get.brightdata.com/1tndi4600b25). Collect detailed reel data by URL with optional geo-targeting.
+A Python wrapper for Bright Data's Instagram Reels scraper API. Collect detailed reel data by URL with optional geo-targeting.
+
+> **All Instagram scrapers:** [Profile Scraper](https://github.com/yaronbeen/bright-data-instagram-profile-scraper) · [Profile Discovery](https://github.com/yaronbeen/bright-data-instagram-profile-discovery) · [Posts Scraper](https://github.com/yaronbeen/bright-data-instagram-posts-scraper) · [Posts Discovery](https://github.com/yaronbeen/bright-data-instagram-posts-discovery) · **Reels Scraper** · [Reels Discovery](https://github.com/yaronbeen/bright-data-instagram-reels-discovery) · [Reels (All) Discovery](https://github.com/yaronbeen/bright-data-instagram-reels-all-discovery) · [Comments Scraper](https://github.com/yaronbeen/bright-data-instagram-comments-scraper)
 
 ## Features
 
@@ -15,17 +17,24 @@ A Python wrapper for [Bright Data's Instagram Reels scraper API](https://get.bri
 - **Simple interface** - Clean Pythonic API with type hints
 - **Fast** - Average response time of ~5 seconds
 
+## Use Cases
+
+- Benchmark reel performance (views vs. likes ratio)
+- Track viral reel metrics and play counts
+- Analyze top-performing reel formats by engagement
+- Monitor competitor reel strategy
+
 ## Prerequisites
 
 - Python 3.8 or higher
-- A Bright Data account with API access - [Sign up here](https://get.brightdata.com/1tndi4600b25)
+- A Bright Data account with API access (create an account at https://brightdata.com)
 
 ## Installation
 
 1. Clone the repository:
 
 ```bash
-git clone https://github.com/luminati-io/bright-data-instagram-reels-scraper.git
+git clone https://github.com/yaronbeen/bright-data-instagram-reels-scraper.git
 cd bright-data-instagram-reels-scraper
 ```
 
@@ -126,23 +135,58 @@ Each reel record contains up to 27 fields. Key fields include:
 ```json
 {
     "url": "https://www.instagram.com/reel/C5Rdyj_q7YN/",
-    "user_posted": "natgeo",
-    "description": "Watch this incredible timelapse of the Northern Lights.",
-    "hashtags": ["nature", "northernlights", "timelapse"],
-    "num_comments": 218,
+    "user_posted": "minimalistbaker",
+    "description": "5-ingredient peanut butter cups that take 15 minutes. Save this one.",
+    "hashtags": ["veganrecipes", "minimalistbaker", "dessert"],
+    "num_comments": 73,
     "date_posted": "2024-04-10T14:30:00.000Z",
-    "likes": 95000,
-    "views": 2500000,
-    "video_play_count": 3100000,
+    "likes": 11247,
+    "views": 289413,
+    "video_play_count": 341876,
     "top_comments": [
-        {"text": "Absolutely stunning!", "owner": "user1"},
-        {"text": "Nature is amazing", "owner": "user2"}
+        {"text": "Making these tonight!", "owner": "healthy_habits_co"},
+        {"text": "Tried it and it's amazing", "owner": "mealprep_sarah"}
     ],
-    "video_url": "https://scontent.cdninstagram.com/v/reel1.mp4",
-    "thumbnail_url": "https://scontent.cdninstagram.com/v/thumb1.jpg",
-    "duration": 29.5
+    "video_url": "https://scontent.cdninstagram.com/v/t50.2886-16/reel1.mp4",
+    "thumbnail_url": "https://scontent.cdninstagram.com/v/t51.2885-15/thumb1.jpg",
+    "duration": 27.3
 }
 ```
+
+> Note: This is a representative example. Actual field values and available fields may vary.
+
+## Error Handling
+
+The scraper raises standard exceptions you can catch:
+
+```python
+import requests
+from instagram_reels_scraper import InstagramReelsScraper
+
+try:
+    scraper = InstagramReelsScraper()
+    results = scraper.collect_by_url("https://www.instagram.com/reel/C5Rdyj_q7YN/")
+except ValueError as e:
+    print(f"Configuration error: {e}")
+except requests.exceptions.HTTPError as e:
+    print(f"API error: {e}")
+except requests.exceptions.ConnectionError:
+    print("Could not connect to the API")
+```
+
+| Exception                          | Cause                                  |
+|------------------------------------|----------------------------------------|
+| `ValueError`                       | Missing API token.                     |
+| `requests.exceptions.HTTPError`    | API returned 4xx/5xx (auth, rate limit, etc.). |
+| `requests.exceptions.ConnectionError` | Network connectivity issue.         |
+| `requests.exceptions.ReadTimeout`  | Request took longer than 30 seconds.   |
+
+## Rate Limits
+
+- **Sync mode:** Results returned directly in the response. Best for small batches (1-10 inputs).
+- **Async mode:** For larger jobs, use the async API. See [Bright Data API docs](https://docs.brightdata.com/datasets/functions/introduction).
+- **No hard rate limit** on API calls, but performance varies with batch size.
+- **Pricing:** $0.0015 per record ($1.50 per 1,000 records).
 
 ## Running Tests
 
@@ -152,14 +196,15 @@ python -m pytest tests/ -v
 
 ## Why Bright Data?
 
-[Bright Data](https://get.brightdata.com/1tndi4600b25) handles the infrastructure for web data collection at scale:
+Reel metrics like view counts and play counts aren't available through Instagram's public API. Bright Data fills the gap:
 
-- **Pre-built scrapers** - No need to build or maintain scraping logic
-- **Structured data** - Clean JSON output with 27+ fields per reel
-- **High success rate** - Built-in proxy rotation and anti-blocking
-- **Scalable** - Handle thousands of requests with consistent performance
-- **Compliant** - Ethical data collection with full regulatory compliance
-- **Pay per result** - Only $0.0015 per record with no upfront costs
+- **View counts, play counts, and engagement data** that Instagram doesn't expose publicly
+- **Optional geo-targeting** with `country_code` parameter for location-specific data
+- **Video URLs included** (note: may expire per Instagram's CDN policy)
+- **$0.0015/record** with 27 structured fields per reel
+- **Reliable delivery** - Handles Instagram's frequent anti-scraping updates automatically
+
+For full API documentation, see the [Bright Data API Reference](https://docs.brightdata.com/datasets/functions/introduction).
 
 [Get started with Bright Data](https://get.brightdata.com/1tndi4600b25)
 
